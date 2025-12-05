@@ -79,7 +79,7 @@ if (-not (Test-Path $TargetDir)) {
 
 Write-Host "Deploying configuration from $SourceDir to $TargetDir...`n" -ForegroundColor Cyan
 
-Get-ChildItem -Path $SourceDir -Exclude ".git", ".gitignore", "README.md", "setup.ps1" | Copy-Item -Destination $TargetDir -Recurse -Force
+Get-ChildItem -Path $SourceDir -Exclude ".git", ".gitignore", "README.md", "setup.ps1", "LICENSE" | Copy-Item -Destination $TargetDir -Recurse -Force
 
 if (Test-Path (Join-Path $TargetDir "init.lua")) {
     Write-Host "Configuration deployed successfully." -ForegroundColor Green
