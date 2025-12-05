@@ -131,4 +131,4 @@ if ($ConfigsToAdd.Count -gt 0) {
         Add-Content -Path $PROFILE -Value $Line
     }
 } else {
-    Write-Host "  [OK] Profile is already fully configured." -ForegroundColor Green
+    Write-Host "  [OK] Profile is already fully configured." -ForegroundColor Green}
