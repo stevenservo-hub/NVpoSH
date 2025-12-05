@@ -141,6 +141,14 @@ Linux: ~/.config/nvim
 
 ## VIsual Tour
 
+One stop automated setup.
+
+<img width="848" height="490" alt="image" src="https://github.com/user-attachments/assets/dcc93ee0-b131-4e3a-8223-6e8cf16df954" />
+
+Whichkey integration.
+
+<img width="1033" height="200" alt="image" src="https://github.com/user-attachments/assets/aec88c71-4174-4440-a6c3-0d4518829f79" />
+
 Lazygit, a full git management system within nvim
 
 <img width="1188" height="648" alt="image" src="https://github.com/user-attachments/assets/78c0522f-928d-4391-8393-2fdb214c84d9" />
