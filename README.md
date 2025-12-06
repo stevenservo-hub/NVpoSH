@@ -1,20 +1,16 @@
 # NVpoSH
+A battery-included Neovim distribution optimized for the **PowerShell ecosystem**.
 
-The Production-Ready Neovim Configuration for Developers and System Engineers who leverage PowerShell as their primary shell.
-"VS Code is a web browser and PowerShell ISE is a corpse. You are an engineer; stop fighting your tools and start commanding them."
+## Why Use This Config?
 
-PoSH-Nvim is a "drop-in" Neovim distribution built specifically for the Windows ecosystem. It prioritizes stability, standard keybinds, and immediate utility over flashy animations. It bridges the gap between the Windows terminal and the speed of modal editing.
+Problem: VS Code is heavy, requires a GUI, and consumes significant memory. It introduces unnecessary latency and telemetry, whereas Neovim provides instant startup and raw performance on any hardware.
 
-Projects like LazyVim or LunarVim are fantastic, but they are built for Linux-first Web Developers. They treat PowerShell support as an afterthought. PoSH-Nvim is built on Windows, for Windows. We don't assume you have sed, awk, or grep. We assume you have Get-ChildItem and Select-String.
+**Solution:** `psh-nvim` provides the **VS Code feature set** inside a lightweight terminal environment:
 
-Note: Linux support is included via PowerShell Core (pwsh) for a consistent cross-platform experience.
-
-## Features
-Production Ready: Zero fragility. Prioritizes uptime and reliability.
-
-Native Tools: Fully configured LSP (Intellisense), GitHub Copilot, and LazyGit running natively.
-
-Learning Curve: Need to learn Neovim? Start Here
+1.  **IntelliSense:** Same underlying engine as VS Code (PowerShell Editor Services).
+2.  **Debugging:** Same DAP protocol.
+3.  **Keybinds:** Mapped for efficiency and reduced RSI.
+4.  **Portability:** Clone and run on any machine (Windows/Linux/Mac) in seconds.
 
 ## Quick Start (Automated Install)
 The included setup.ps1 script backs up your existing configuration and deploys PoSH-Nvim. On Windows, it also automates dependency installation.
