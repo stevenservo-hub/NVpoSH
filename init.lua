@@ -68,6 +68,7 @@ vim.opt.timeoutlen = 300
 vim.opt.termguicolors = true
 vim.opt.signcolumn = "yes"  
 vim.opt.updatetime = 250    
+vim.opt.iskeyword:append("-") -- Treat dash as part of a word (for PowerShell cmdlets)
 
 -- Native Highlight Yank
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -152,7 +153,6 @@ require("lazy").setup({
   },
 
 --  UI & Themes 
-
   { 
     "ellisonleao/gruvbox.nvim", 
     -- If prefs.theme is somehow nil, this ensures it doesn't accidentally lazy load without a trigger
@@ -212,8 +212,17 @@ require("lazy").setup({
     config = function()
       -- Windows optimization for compilers
       require("nvim-treesitter.install").compilers = { "zig", "gcc" }
+      local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+      parser_config.d2 = {
+        install_info = {
+          url = "https://github.com/ravsii/tree-sitter-d2", -- The repo with the grammar
+          files = { "src/parser.c" },
+          branch = "main",
+        },
+        filetype = "d2",
+      }
       require("nvim-treesitter.configs").setup({
-        ensure_installed = { "powershell", "lua", "python", "c_sharp", "go", "markdown", "json", "yaml", "bash" },
+      ensure_installed = { "powershell", "lua", "python", "c_sharp", "go", "markdown", "json", "yaml", "bash"},
         sync_install = false,
         highlight = { enable = true },
         indent = { enable = true },
@@ -238,7 +247,7 @@ require("lazy").setup({
       end
 
       mason_lsp.setup({ 
-        ensure_installed = { "powershell_es", "lua_ls", "omnisharp" },
+        ensure_installed = { "powershell_es", "lua_ls", "omnisharp"},
         handlers = {
           function(server_name)
             require("lspconfig")[server_name].setup({ 
@@ -247,13 +256,21 @@ require("lazy").setup({
             })
           end,
 
-          -- PowerShell Config
-          ["powershell_es"] = function()
+["powershell_es"] = function()
             require("lspconfig").powershell_es.setup({
               bundle_path = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services",
-              settings = { powershell = { codeFormatting = { preset = "OTBS" } } },
-              capabilities = capabilities,
-              on_attach = on_attach 
+              
+              settings = {
+                powershell = {
+                  codeFormatting = { preset = "OTBS" },
+                  enableProfileLoading = false,
+                  scriptAnalysis = {
+                    enable = true,
+                  },
+                },
+              },               
+	      capabilities = capabilities,
+              on_attach = on_attach
             })
           end,
 
@@ -346,21 +363,22 @@ require("lazy").setup({
       })
     end,
   },
-  -- Copilot Chat
+
+-- Copilot Chat
   {
     "CopilotC-Nvim/CopilotChat.nvim",
     cond = prefs.enable_copilot,
-    branch = "canary", 
+    branch = "main",
     dependencies = { "zbirenbaum/copilot.lua", "nvim-lua/plenary.nvim" },
     opts = { debug = false, window = { layout = 'float' } },
     keys = {
-      { "<leader>cc", ":CopilotChatToggle<cr>", desc = "Copilot Chat" },
-      { "<leader>ce", ":CopilotChatExplain<cr>", desc = "Copilot Explain" },
-      { "<leader>cf", ":CopilotChatFix<cr>", desc = "Copilot Fix" },
+      { "<leader>cc", "<cmd>CopilotChatToggle<cr>", mode = { "n", "v" }, desc = "Copilot Chat" },
+      { "<leader>ce", "<cmd>CopilotChatExplain<cr>", mode = { "n", "v" }, desc = "Copilot Explain" },
+      { "<leader>cf", "<cmd>CopilotChatFix<cr>", mode = { "n", "v" }, desc = "Copilot Fix" },
+      { "<leader>cr", "<cmd>CopilotChatReview<cr>", mode = { "n", "v" }, desc = "Copilot Review" },
     },
-  },
-})
-
+    },
+    })
 -- =============================================================================
 -- 6. KEYMAPS (Enhanced)
 -- =============================================================================

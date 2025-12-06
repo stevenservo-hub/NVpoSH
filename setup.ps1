@@ -5,12 +5,12 @@ if ($IsWindows) {
     }
 
 # This script relies on internet connection and DNS
-test-connection -ComputerName "www.microsoft.com" -Count 1 -ErrorAction SilentlyContinue | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Internet connection is required to run this setup script."
+if (-not (Test-Connection -ComputerName "www.google.com" -Count 1 -Quiet)) {
+    Write-Error "Internet connection is required."
     exit 1
 }
 
+Clear-Host
 $Banner = @"
 ███╗   ██╗██╗   ██╗██████╗  ██████╗ ███████╗██╗  ██╗
 ████╗  ██║██║   ██║██╔══██╗██╔═══██╗██╔════╝██║  ██║
