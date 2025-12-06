@@ -41,18 +41,19 @@ Install-WingetPackage -Id "JesseDuffield.lazygit"
 Install-WingetPackage -Id "zig.zig"
 Install-WingetPackage -Id "BurntSushi.ripgrep.MSVC"
 Install-WingetPackage -Id "sharkdp.fd"
+Install-WingetPackage -Id "Terrastruct.D2"
 }
 
-$Nerdfrontcheck = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue | 
+$Nerdfontcheck = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue | 
     ForEach-Object { $_.PSObject.Properties.Name } | 
-    Where-Object { $_ -match 'Nerd Font' } | 
+    Where-Object { $_ -match 'NerdFont' } | 
     Select-Object -First 1
 	
-if ($IsWindows -and -not $Nerdfrontcheck) {
-    Write-Host "Installing Nerd Font...`n" -ForegroundColor Cyan
+if ($IsWindows -and -not $Nerdfontcheck) {
+    Write-Host "Installing NerdFont...`n" -ForegroundColor Cyan
     & ([scriptblock]::Create((Invoke-WebRequest 'https://to.loredo.me/Install-NerdFont.ps1')))
 } else {
-	    Write-Host "Nerd Font already installed`n" -ForegroundColor Green
+	    Write-Host "NerdFont already installed`n" -ForegroundColor Green
 }
 
 $SourceDir = $PSScriptRoot

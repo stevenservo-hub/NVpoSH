@@ -98,6 +98,7 @@ require("lazy").setup({
     end
   },
 
+  -- Keybinding Helper
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
@@ -107,6 +108,14 @@ require("lazy").setup({
     end,
     opts = {}
   },
+  -- D2 Diagramming Language Support
+  {
+  "terrastruct/d2-vim",
+  ft = "d2", 
+  config = function()
+    vim.g.d2_fmt_autosave = 1 
+  end,
+   },
 
   -- Git Management
   {
