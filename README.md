@@ -3,7 +3,7 @@ A battery-included Neovim distribution optimized for the **PowerShell ecosystem*
 
 ## Why Use This Config?
 
-**Problem:** VS Code is heavy, requires a GUI, and consumes significant memory. It is often unusable on restricted servers or slow VPN connections.
+Problem: VS Code is heavy, requires a GUI, and consumes significant memory. It introduces unnecessary latency and telemetry, whereas Neovim provides instant startup and raw performance on any hardware.
 
 **Solution:** `psh-nvim` provides the **VS Code feature set** inside a lightweight terminal environment:
 
