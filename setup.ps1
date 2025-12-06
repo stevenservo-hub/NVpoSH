@@ -4,8 +4,12 @@ if ($IsWindows) {
         exit 1
     }
 
-
-Clear-Host
+# This script relies on internet connection and DNS
+test-connection -ComputerName "www.microsoft.com" -Count 1 -ErrorAction SilentlyContinue | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Internet connection is required to run this setup script."
+    exit 1
+}
 
 $Banner = @"
 ███╗   ██╗██╗   ██╗██████╗  ██████╗ ███████╗██╗  ██╗
@@ -27,10 +31,10 @@ function Install-WingetPackage {
     $null = winget list -e --id $Id --accept-source-agreements 2>&1
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Installing $Id..." -ForegroundColor Cyan
+        Write-Host "Installing $Id...`n" -ForegroundColor Cyan
         winget install -e --id $Id --accept-package-agreements --accept-source-agreements --silent --force --disable-interactivity
     } else {
-        Write-Host "$Id is already installed." -ForegroundColor Green
+        Write-Host "$Id is already installed.`n" -ForegroundColor Green
     }
 }
 
@@ -83,11 +87,11 @@ Write-Host "Deploying configuration from $SourceDir to $TargetDir...`n" -Foregro
 Get-ChildItem -Path $SourceDir -Exclude ".git", ".gitignore", "README.md", "setup.ps1", "LICENSE" | Copy-Item -Destination $TargetDir -Recurse -Force
 
 if (Test-Path (Join-Path $TargetDir "init.lua")) {
-    Write-Host "Configuration deployed successfully." -ForegroundColor Green
+    Write-Host "Configuration deployed successfully.`n" -ForegroundColor Green
 } else {
-    Write-Error "Deployment failed: init.lua not found in target."
+    Write-Error "Deployment failed: init.lua not found in target.`n"
 }
-Write-Host "Configuring PowerShell Profile..." -ForegroundColor Cyan
+Write-Host "Configuring PowerShell Profile...`n" -ForegroundColor Cyan
 
 $ProfileDir = Split-Path $PROFILE -Parent
 if (-not (Test-Path $ProfileDir)) {
