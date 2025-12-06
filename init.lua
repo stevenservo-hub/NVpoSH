@@ -26,7 +26,7 @@ else
   if vim.fn.executable('pwsh') == 1 then
     shell_cmd = 'pwsh -NoLogo -ExecutionPolicy Bypass'
   else
-    shell_cmd = 'bash' 
+    shell_cmd = 'bash'
   end
 end
 
@@ -57,17 +57,17 @@ vim.opt.rtp:prepend(lazypath)
 -- =============================================================================
 -- 4. CORE SETTINGS
 -- =============================================================================
-vim.g.mapleader = "-" 
+vim.g.mapleader = "-"
 vim.g.maplocalleader = "-"
 
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
-vim.opt.scrolloff = 8       
-vim.opt.timeoutlen = 300    
+vim.opt.scrolloff = 8
+vim.opt.timeoutlen = 300
 vim.opt.termguicolors = true
-vim.opt.signcolumn = "yes"  
-vim.opt.updatetime = 250    
+vim.opt.signcolumn = "yes"
+vim.opt.updatetime = 250
 vim.opt.iskeyword:append("-") -- Treat dash as part of a word (for PowerShell cmdlets)
 
 -- Native Highlight Yank
@@ -85,8 +85,8 @@ require("lazy").setup({
 
   rocks = { enabled = false, hererocks = false },
 
-  { "nvim-lua/plenary.nvim" }, 
-  
+  { "nvim-lua/plenary.nvim" },
+
   -- Fuzzy Finder (New Feature: Telescope)
   {
     "nvim-telescope/telescope.nvim",
@@ -116,7 +116,7 @@ require("lazy").setup({
     dependencies = { "nvim-tree/nvim-web-devicons" },
     keys = {
       { "<leader>xx", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
-      { "<leader>xX", "<cmd>Trouble diagnostics toggle<cr>", desc = "Workspace Diagnostics (Trouble)" },			
+      { "<leader>xX", "<cmd>Trouble diagnostics toggle<cr>", desc = "Workspace Diagnostics (Trouble)" },
     },
     opts = {
     focus = true,
@@ -135,9 +135,9 @@ require("lazy").setup({
   -- D2 Diagramming Language Support
   {
   "terrastruct/d2-vim",
-  ft = "d2", 
+  ft = "d2",
   config = function()
-    vim.g.d2_fmt_autosave = 1 
+    vim.g.d2_fmt_autosave = 1
   end,
    },
 
@@ -166,11 +166,11 @@ require("lazy").setup({
     config = function()
       local harpoon = require("harpoon")
       harpoon:setup()
-      
+
       -- Keymaps
       vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end, { desc = "Harpoon Add" })
       vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon Menu" })
-      
+
       -- Fast Navigation
       vim.keymap.set("n", "<C-1>", function() harpoon:list():select(1) end)
       vim.keymap.set("n", "<C-2>", function() harpoon:list():select(2) end)
@@ -187,7 +187,7 @@ require("lazy").setup({
         scope = { enabled = true },
     },
   },
-	
+
   -- Git Signs
   { "lewis6991/gitsigns.nvim", config = true },
 
@@ -208,30 +208,30 @@ require("lazy").setup({
   },
 
 --  UI & Themes 
-  { 
-    "ellisonleao/gruvbox.nvim", 
+  {
+    "ellisonleao/gruvbox.nvim",
     -- If prefs.theme is somehow nil, this ensures it doesn't accidentally lazy load without a trigger
-    lazy = (prefs.theme ~= "gruvbox"), 
-    priority = 1000, 
-    config = function() 
+    lazy = (prefs.theme ~= "gruvbox"),
+    priority = 1000,
+    config = function()
       -- Set background BEFORE loading the scheme to prevent reset flashes
-      vim.o.background = prefs.background 
-      vim.cmd("colorscheme gruvbox") 
-    end 
+      vim.o.background = prefs.background
+      vim.cmd("colorscheme gruvbox")
+    end
   },
-    
+
   -- File Explorer (Neo-tree)
   {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
     dependencies = {
       "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons", 
+      "nvim-tree/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
     },
     config = function()
-      vim.opt.splitright = true 
-      vim.opt.splitbelow = true 
+      vim.opt.splitright = true
+      vim.opt.splitbelow = true
       require("neo-tree").setup({
           enable_diagnostics = false,
           close_if_last_window = true,
@@ -258,7 +258,7 @@ require("lazy").setup({
 
   --  Coding & Automation 
   { "jiangmiao/auto-pairs" },
-  { "preservim/nerdcommenter" }, 
+  { "preservim/nerdcommenter" },
 
   -- Treesitter
   {
@@ -296,18 +296,18 @@ require("lazy").setup({
       require("mason").setup()
       local mason_lsp = require("mason-lspconfig")
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
-      
+
       local on_attach = function(client, bufnr)
         client.server_capabilities.semanticTokensProvider = nil
       end
 
-      mason_lsp.setup({ 
+      mason_lsp.setup({
         ensure_installed = { "powershell_es", "lua_ls", "omnisharp"},
         handlers = {
           function(server_name)
-            require("lspconfig")[server_name].setup({ 
+            require("lspconfig")[server_name].setup({
                 capabilities = capabilities,
-                on_attach = on_attach 
+                on_attach = on_attach
             })
           end,
 
@@ -323,7 +323,7 @@ require("lazy").setup({
                     enable = true,
                   },
                 },
-              },               
+              },
 	      capabilities = capabilities,
               on_attach = on_attach
             })
@@ -344,7 +344,7 @@ require("lazy").setup({
           ["lua_ls"] = function()
              require("lspconfig").lua_ls.setup({
                 capabilities = capabilities,
-                on_attach = on_attach, 
+                on_attach = on_attach,
                 settings = {
                   Lua = {
                     diagnostics = { globals = { "vim" } },
@@ -362,18 +362,18 @@ require("lazy").setup({
   -- Completion (CMP)
   {
     "hrsh7th/nvim-cmp",
-    dependencies = { 
-      "hrsh7th/cmp-buffer", 
-      "hrsh7th/cmp-path", 
+    dependencies = {
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
       "hrsh7th/cmp-cmdline",
       "hrsh7th/cmp-nvim-lsp",
-      "L3MON4D3/LuaSnip", 
+      "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
     },
     config = function()
       local cmp = require("cmp")
       local luasnip = require("luasnip")
-      
+
       cmp.setup({
         snippet = {
           expand = function(args)
@@ -386,11 +386,11 @@ require("lazy").setup({
           ['<CR>'] = cmp.mapping.confirm({ select = true }),
           ['<C-Space>'] = cmp.mapping.complete(),
         }),
-        sources = cmp.config.sources({ 
+        sources = cmp.config.sources({
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'buffer' },
-          { name = 'path' }     
+          { name = 'path' }
         })
       })
     end
@@ -405,7 +405,7 @@ require("lazy").setup({
     config = function()
       require("copilot").setup({
         copilot_node_command = node_cmd,
-        suggestion = { 
+        suggestion = {
           enabled = true,
           auto_trigger = true,
           keymap = {
@@ -471,6 +471,10 @@ vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to Def" })
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover Doc" })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Action" })
 
+-- Diagnostics Navigation
+vim.keymap.set("n", "gl", vim.diagnostic.open_float, { desc = "Show Line Diagnostics" })
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous Diagnostic" })
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
 -- =============================================================================
 -- 7. AUTOCOMMANDS
 -- =============================================================================
