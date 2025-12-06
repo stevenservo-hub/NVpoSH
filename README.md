@@ -169,7 +169,7 @@ Co-pilot runs inline. There is also the ability to toggle session chat which wor
 
 Neotree gives you full access to the filesystem so you can move in and out of files without leaving.
 
-<img width="1853" height="949" alt="image" src="https://github.com/user-attachments/assets/a06d2d9b-3aa4-4e7e-b1e5-98384846a75b" />
+<img width="422" height="305" alt="image" src="https://github.com/user-attachments/assets/61016e43-76b6-4109-8c2e-b92f58b28ccb" />
 
 Preview files before opening
 
