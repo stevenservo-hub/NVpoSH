@@ -109,6 +109,29 @@ require("lazy").setup({
     end,
     opts = {}
   },
+
+  -- Diagnostic Viewer
+{
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+      { "<leader>xx", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
+      { "<leader>xX", "<cmd>Trouble diagnostics toggle<cr>", desc = "Workspace Diagnostics (Trouble)" },			
+    },
+    opts = {
+    focus = true,
+    },
+},
+  -- TODO Comments
+{
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {},
+    keys = {
+        { "<leader>ft", "<cmd>TodoTelescope<cr>", desc = "Find TODOs" },
+    },
+  },
+
   -- D2 Diagramming Language Support
   {
   "terrastruct/d2-vim",
@@ -134,6 +157,38 @@ require("lazy").setup({
       vim.g.lazygit_use_neovim_remote = 1
     end,
   },
+
+  -- Harpoon (File Navigation)
+{
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      local harpoon = require("harpoon")
+      harpoon:setup()
+      
+      -- Keymaps
+      vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end, { desc = "Harpoon Add" })
+      vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon Menu" })
+      
+      -- Fast Navigation
+      vim.keymap.set("n", "<C-1>", function() harpoon:list():select(1) end)
+      vim.keymap.set("n", "<C-2>", function() harpoon:list():select(2) end)
+      vim.keymap.set("n", "<C-3>", function() harpoon:list():select(3) end)
+      vim.keymap.set("n", "<C-4>", function() harpoon:list():select(4) end)
+    end,
+  },
+
+  -- Indent Guides
+{
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {
+        scope = { enabled = true },
+    },
+  },
+	
+  -- Git Signs
   { "lewis6991/gitsigns.nvim", config = true },
 
   -- Terminal (ToggleTerm)
