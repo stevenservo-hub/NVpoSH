@@ -139,42 +139,42 @@ Linux: ~/.config/nvim
 
 One stop automated setup.
 
-<img width="848" height="490" alt="image" src="https://github.com/user-attachments/assets/dcc93ee0-b131-4e3a-8223-6e8cf16df954" />
+<img width="848" height="490" alt="image" src="https://github.com/user-attachments/assets/050d3459-2d4c-4870-8327-bf737bd550ce" />
 
 Whichkey integration.
 
-<img width="1033" height="200" alt="image" src="https://github.com/user-attachments/assets/aec88c71-4174-4440-a6c3-0d4518829f79" />
+<img width="1033" height="200" alt="image" src="https://github.com/user-attachments/assets/fa27be59-9506-49aa-a6b4-a486c3b2f60c" />
 
 Lazygit, a full git management system within nvim
 
-<img width="1188" height="648" alt="image" src="https://github.com/user-attachments/assets/78c0522f-928d-4391-8393-2fdb214c84d9" />
+<img width="1188" height="648" alt="image" src="https://github.com/user-attachments/assets/6d99082b-77bb-4316-878e-bbef77339e23" />
 
 Toggleterm to give you  PS terminal access within nvim
 
-<img width="1871" height="964" alt="image" src="https://github.com/user-attachments/assets/3e1ca8ed-a133-4bca-9e57-7e117c9816f2" />
+<img width="1871" height="964" alt="image" src="https://github.com/user-attachments/assets/6b418c6f-00af-41de-958e-f2a70d0b5750" />
 
 Full LSP and intellisense for powershell, python, GO, etc. Giving you "in terminal" access to definitions and keywords. 
 
-<img width="487" height="74" alt="image" src="https://github.com/user-attachments/assets/690c6329-c775-4c8e-afb7-747fea70fcbb" />
-<img width="540" height="498" alt="image" src="https://github.com/user-attachments/assets/f38c55cb-3cea-4a1f-970b-091ab63ba311" />
+<img width="487" height="74" alt="image" src="https://github.com/user-attachments/assets/6a4dee1b-5172-4673-abdb-2ee73a747e0f" />
+<img width="540" height="498" alt="image" src="https://github.com/user-attachments/assets/246a8d16-9a9d-4d25-b28c-9b1286986852" />
 
 Mouse support for those who cannot live without it.
 
-<img width="490" height="204" alt="image" src="https://github.com/user-attachments/assets/63c5a391-dd18-46d9-a080-deae043599b6" />
+<img width="490" height="204" alt="image" src="https://github.com/user-attachments/assets/86d8ac93-10e8-4924-9d89-384ae156d5b4" />
 
 Co-pilot runs inline. There is also the ability to toggle session chat which works on the global buffer to make code transfer easy.
 
-<img width="575" height="53" alt="image" src="https://github.com/user-attachments/assets/7be77e97-cd2f-4985-aee2-28f84e1b3c6a" />
-<img width="1334" height="686" alt="image" src="https://github.com/user-attachments/assets/7ad649f7-4c6b-436b-9002-1c5dc89d39d7" />
+<img width="575" height="53" alt="image" src="https://github.com/user-attachments/assets/f20f3e73-36db-410e-bf8c-f4504872b109" />
+<img width="1334" height="686" alt="image" src="https://github.com/user-attachments/assets/ebb8f8a2-8d39-4dda-a471-ffac5a298f3c" />
 
 Neotree gives you full access to the filesystem so you can move in and out of files without leaving.
 
-<img width="422" height="305" alt="image" src="https://github.com/user-attachments/assets/7743f185-00c8-46c5-bc08-d9b05c60bb0a" />
+<img width="1853" height="949" alt="image" src="https://github.com/user-attachments/assets/a06d2d9b-3aa4-4e7e-b1e5-98384846a75b" />
 
 Preview files before opening
 
-<img width="1853" height="949" alt="image" src="https://github.com/user-attachments/assets/fa011789-2fc4-49e0-8619-a86452e55ddc" />
+<img width="1853" height="949" alt="image" src="https://github.com/user-attachments/assets/bdde0488-3a6f-4b6b-aa9d-4f79176c9507" />
 
 Easy Windows Management
 
-<img width="1914" height="991" alt="image" src="https://github.com/user-attachments/assets/1e00dbd1-f93d-4215-972e-78781b0ed62f" />
+<img width="1914" height="991" alt="image" src="https://github.com/user-attachments/assets/a0b6737b-0615-4af5-8a87-d77c771db719" />
