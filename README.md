@@ -135,6 +135,12 @@ Linux: ~/.config/nvim
 | `Shift+l` | Normal | Next Tab |
 | `Shift+h` | Normal | Previous Tab |
 
+### Cheat.sh Queries
+| Key | Mode | Action |
+| :--- | :--- | :--- |
+| `-?` | Normal | **Query cheat.sh for useful info** |
+| `:Cheathelp` | Normal | **Examples** |
+
 ## VIsual Tour
 
 One stop automated setup.
