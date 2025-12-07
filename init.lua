@@ -63,13 +63,12 @@ vim.g.maplocalleader = "-"
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
-vim.opt.scrolloff = 8
+vim.opt.scrolloff = 999
 vim.opt.timeoutlen = 300
 vim.opt.termguicolors = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 vim.opt.iskeyword:append("-") -- Treat dash as part of a word (for PowerShell cmdlets)
-
 -- Native Highlight Yank
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = vim.api.nvim_create_augroup("HighlightYank", { clear = true }),
@@ -77,6 +76,16 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 })
   end,
 })
+
+vim.keymap.set("n", "<leader>zz", function()
+  if vim.opt.scrolloff:get() == 999 then
+    vim.opt.scrolloff = 8
+    print("Scrolling: Standard (8 lines)")
+  else
+    vim.opt.scrolloff = 999
+    print("Scrolling: Centered (Typewriter)")
+  end
+end, { desc = "Toggle Centered Scroll" })
 
 -- =============================================================================
 -- 5. PLUGINS
@@ -475,6 +484,16 @@ vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Action
 vim.keymap.set("n", "gl", vim.diagnostic.open_float, { desc = "Show Line Diagnostics" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous Diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
+
+-- Cheat.sh Query
+vim.keymap.set("n", "<leader>?", function()
+  vim.ui.input({ prompt = "Cheat.sh Query: " }, function(input)
+    if input and input ~= "" then
+      vim.cmd("Cheat " .. input)
+    end
+  end)
+end, { desc = "Query Cheat.sh" })
+
 -- =============================================================================
 -- 7. AUTOCOMMANDS
 -- =============================================================================
@@ -494,3 +513,61 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end
   end,
 })
+
+-- =============================================================================
+-- 8. CUSTOM COMMANDS
+-- =============================================================================
+
+-- Cheat.sh Command
+vim.api.nvim_create_user_command("Cheat", function(opts)
+  local query = opts.args:gsub(" ", "+")
+  local cmd = string.format("powershell.exe -NoProfile -Command Invoke-RestMethod -Uri 'https://cheat.sh/%s?T'", query)
+  local output = vim.fn.systemlist(cmd)
+
+  vim.cmd("new")
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, output)
+  vim.opt_local.buftype = "nofile"
+  vim.opt_local.bufhidden = "wipe"
+  vim.opt_local.swapfile = false
+  vim.opt_local.filetype = "sh"
+end, { nargs = "+" })
+
+-- Cheat.sh Help Command
+vim.api.nvim_create_user_command("CheatHelp", function()
+  local help_text = {
+    "Cheat.sh Cheatsheet",
+    "===================",
+    "",
+    "Usage Examples:",
+    "  :Cheat powershell/try catch",
+    "  :Cheat python/reverse list",
+    "  :Cheat lua/table size",
+    "  :Cheat git/commit",
+    "  :Cheat docker/run",
+    "",
+    "Press <q> or <Esc> to close"
+  }
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, help_text)
+
+  local width = 40
+  local height = #help_text
+  local col = math.floor((vim.o.columns - width) / 2)
+  local row = math.floor((vim.o.lines - height) / 2)
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    col = col,
+    row = row,
+    style = "minimal",
+    border = "rounded"
+  })
+
+  local close_win = function() vim.api.nvim_win_close(win, true) end
+  vim.keymap.set("n", "q", close_win, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", close_win, { buffer = buf, nowait = true })
+
+end, {})

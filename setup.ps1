@@ -129,11 +129,67 @@ if ($CurrentProfile -notmatch "Set-Alias.*vi\b") {
 }
 
 if ($ConfigsToAdd.Count -gt 0) {
-    Write-Host "  [UPDATE] Appending missing configurations..." -ForegroundColor Green
+    Write-Host "  [+] Adding missing configurations..." -ForegroundColor Green
     
     Add-Content -Path $PROFILE -Value "`n# --- PoSH-Nvim Basics ---"
     foreach ($Line in $ConfigsToAdd) {
         Add-Content -Path $PROFILE -Value $Line
     }
 } else {
-    Write-Host "  [OK] Profile is already fully configured." -ForegroundColor Green}
+    Write-Host "  [SKIP] Profile is already fully configured."}
+
+function Install-NVPoshProfileConfig {
+    [CmdletBinding()]
+    param()
+
+    $targetProfile = $PROFILE.CurrentUserCurrentHost
+    
+    if (-not (Test-Path $targetProfile)) {
+        New-Item -Path $targetProfile -ItemType File -Force | Out-Null
+        Write-Host "  [+] Created new profile file at: $targetProfile" -ForegroundColor Green
+    }
+
+    $currentContent = Get-Content -Path $targetProfile -Raw -ErrorAction SilentlyContinue
+
+    if ($currentContent -match "ID: NV-POSH-CONFIG") {
+        Write-Host "  [SKIP] Config already present. Skipping to avoid duplicates."
+        return
+    }
+
+    $payload = @"
+# ID: NV-POSH-CONFIG (do not remove, used to check if config is already applied)
+
+try {
+    if (`$host.Name -eq 'ConsoleHost') {
+        # Import PSReadLine if available
+        if (Get-Module -ListAvailable PSReadLine) {
+            Import-Module PSReadLine -ErrorAction Stop
+
+            Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+
+            Set-PSReadLineOption -Colors @{
+                "Selection" = "`e[30;47m" # Black text on White bg
+                "Parameter" = "`e[37m"    # White text
+                "Command"   = "`e[93m"    # Bright Yellow
+            }
+            
+            if (`$PSVersionTable.PSVersion.Major -ge 7 -or (Get-Module PSReadLine).Version.Major -ge 2) {
+                Set-PSReadLineOption -PredictionSource History -ErrorAction SilentlyContinue
+                Set-PSReadLineOption -PredictionViewStyle InlineView -ErrorAction SilentlyContinue
+            }
+        }
+    }
+} catch {
+}
+"@
+
+    try {
+        Add-Content -Path $targetProfile -Value $payload
+        Write-Host "  [+] Successfully patched profile." -ForegroundColor Green
+        Write-Host "  [INFO] restart your terminal or run '. `$PROFILE' to apply." -ForegroundColor Yellow
+    } catch {
+        Write-Error "  [-] Failed to write to profile: $_"
+    }
+}
+
+Install-NVPoshProfileConfig
