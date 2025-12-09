@@ -57,8 +57,8 @@ vim.opt.rtp:prepend(lazypath)
 -- =============================================================================
 -- 4. CORE SETTINGS
 -- =============================================================================
-vim.g.mapleader = "-"
-vim.g.maplocalleader = "-"
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -69,6 +69,9 @@ vim.opt.termguicolors = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 vim.opt.iskeyword:append("-") -- Treat dash as part of a word (for PowerShell cmdlets)
+vim.opt.cursorcolumn = false
+vim.opt.list = false
+
 -- Native Highlight Yank
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = vim.api.nvim_create_augroup("HighlightYank", { clear = true }),
@@ -188,15 +191,6 @@ require("lazy").setup({
     end,
   },
 
-  -- Indent Guides
-{
-    "lukas-reineke/indent-blankline.nvim",
-    main = "ibl",
-    opts = {
-        scope = { enabled = true },
-    },
-  },
-
   -- Git Signs
   { "lewis6991/gitsigns.nvim", config = true },
 
@@ -227,6 +221,23 @@ require("lazy").setup({
       vim.o.background = prefs.background
       vim.cmd("colorscheme gruvbox")
     end
+  },
+
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    config = function()
+      vim.api.nvim_set_hl(0, "IblIndent", { fg = "#504945" }) 
+
+      require("ibl").setup({
+        indent = { 
+          char = "│", 
+          highlight = "IblIndent",
+        },
+        
+        scope = { enabled = false },
+      })
+    end,
   },
 
   -- File Explorer (Neo-tree)
@@ -408,6 +419,11 @@ require("lazy").setup({
   -- Copilot 
   {
     "zbirenbaum/copilot.lua",
+    filetypes = {
+          gitcommit = true,
+          markdown = true,
+          yaml = false,
+    },
     cond = prefs.enable_copilot,
     cmd = "Copilot",
     event = "InsertEnter",
@@ -436,10 +452,11 @@ require("lazy").setup({
     dependencies = { "zbirenbaum/copilot.lua", "nvim-lua/plenary.nvim" },
     opts = { debug = false, window = { layout = 'float' } },
     keys = {
-      { "<leader>cc", "<cmd>CopilotChatToggle<cr>", mode = { "n", "v" }, desc = "Copilot Chat" },
-      { "<leader>ce", "<cmd>CopilotChatExplain<cr>", mode = { "n", "v" }, desc = "Copilot Explain" },
-      { "<leader>cf", "<cmd>CopilotChatFix<cr>", mode = { "n", "v" }, desc = "Copilot Fix" },
-      { "<leader>cr", "<cmd>CopilotChatReview<cr>", mode = { "n", "v" }, desc = "Copilot Review" },
+      { "<leader>lc", "<cmd>CopilotChatToggle<cr>", mode = { "n"}, desc = "Copilot Chat" },
+      { "<leader>le", "<cmd>CopilotChatExplain<cr>", mode = { "n", "v" }, desc = "Copilot Explain" },
+      { "<leader>lf", "<cmd>CopilotChatFix<cr>", mode = { "n", "v" }, desc = "Copilot Fix" },
+      { "<leader>lr", "<cmd>CopilotChatReview<cr>", mode = { "n", "v" }, desc = "Copilot Review" },
+      { "<leader>lm", "<cmd>CopilotChatCommit<cr>", desc = "Copilot Generate Commit Message" },
     },
     },
     })
@@ -537,6 +554,8 @@ vim.api.nvim_create_user_command("CheatHelp", function()
   local help_text = {
     "Cheat.sh Cheatsheet",
     "===================",
+    "Shortcuts:",
+    "<leader>? - Prompt for a cheat.sh query",
     "",
     "Usage Examples:",
     "  :Cheat powershell/try catch",
