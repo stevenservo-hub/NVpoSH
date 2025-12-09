@@ -59,7 +59,6 @@ vim.opt.rtp:prepend(lazypath)
 -- =============================================================================
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
-
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
@@ -419,16 +418,16 @@ require("lazy").setup({
   -- Copilot 
   {
     "zbirenbaum/copilot.lua",
+    cond = prefs.enable_copilot,
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+    require("copilot").setup({
     filetypes = {
           gitcommit = true,
           markdown = true,
           yaml = false,
     },
-    cond = prefs.enable_copilot,
-    cmd = "Copilot",
-    event = "InsertEnter",
-    config = function()
-      require("copilot").setup({
         copilot_node_command = node_cmd,
         suggestion = {
           enabled = true,
