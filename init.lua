@@ -89,12 +89,30 @@ vim.keymap.set("n", "<leader>zz", function()
   end
 end, { desc = "Toggle Centered Scroll" })
 
+vim.api.nvim_create_user_command('D2Watch', function()
+  local file = vim.fn.expand('%:p')
+  if vim.fn.expand('%:e') ~= 'd2' then
+    print("Not a .d2 file")
+    return
+  end
+
+  print("Starting D2 Watcher for " .. vim.fn.expand('%:t') .. "...")
+  
+  local cmd = string.format("Start-Process -FilePath 'd2' -ArgumentList '--watch', '%s', '--browser', '1' -WindowStyle Hidden", file)
+  
+  vim.fn.jobstart({"powershell", "-c", cmd}, {
+    on_exit = function(_, code)
+      if code ~= 0 then
+        print("D2 Watcher failed to start.")
+      end
+    end
+  })
+end, {})
+
 -- =============================================================================
 -- 5. PLUGINS
 -- =============================================================================
 require("lazy").setup({
-
-  rocks = { enabled = false, hererocks = false },
 
   { "nvim-lua/plenary.nvim" },
 
@@ -442,6 +460,38 @@ require("lazy").setup({
       })
     end,
   },
+
+{
+  "3rd/image.nvim",
+  build = false, -- CRITICAL: This stops it from trying to compile with your system Lua
+  dependencies = {
+    {
+      "kiyoon/magick.nvim",
+      build = false -- Disable build here too just to be safe
+    }
+  },
+  config = function()
+    require("image").setup({
+      backend = "kitty", -- Change this if you aren't using WezTerm/Kitty
+      integrations = {
+        markdown = {
+          enabled = true,
+          clear_in_insert_mode = true,
+          download_remote_images = true,
+          only_render_image_at_cursor = false,
+          filetypes = { "markdown", "vimwiki" },
+        },
+      },
+      max_width = 100,
+      max_height = 12,
+      max_width_window_percentage = math.huge,
+      max_height_window_percentage = math.huge,
+      window_overlap_clear_enabled = false, 
+      editor_only_render_when_focused = false,
+      tmux_show_only_in_active_window = true,
+    })
+  end
+},
 
 -- Copilot Chat
   {
