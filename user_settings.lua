@@ -14,7 +14,9 @@ M.transparent_bg = false
 M.node_path_windows = "C:\\Program Files\\nodejs\\node.exe" 
 
 -- Feature flags
-M.enable_copilot = true
 M.enable_neo_tree_on_startup = true
+
+-- AI Configuration
+M.gemini_api_key = "AIzaSyAsYwlV6CBEYnHAImNpfgTLDKSCs_ShJWI"
 
 return M

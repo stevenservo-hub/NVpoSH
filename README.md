@@ -72,7 +72,7 @@ Linux: ~/.config/nvim
 4. Run `:Lazy` to check plugin status.
 
 ## Custom Keymap Reference
-**Leader Key:** `-` (Dash)
+**Leader Key:** `Space`
 
 ### Intellisense (LSP & Autocomplete)
 | Key | Mode | Action |
@@ -82,15 +82,14 @@ Linux: ~/.config/nvim
 | `Tab` | Insert | **Autocomplete Menu** (Select next list suggestion) |
 | `S-Tab` | Insert | **Autocomplete Back** (Select previous list suggestion) |
 
-### AI (GitHub Copilot)
+### AI (Copilot & Avante)
 | Key | Mode | Action |
 | :--- | :--- | :--- |
-| `Alt + l` | Insert | **Accept Ghost Text** (Commits the gray inline suggestion) |
-| `Alt + ]` | Insert | **Next Suggestion** (Cycle forward through ghost text options) |
-| `-cc` | Normal | **Toggle Chat** (Opens the floating Copilot window) |
-| `-ce` | Normal | **Explain Code** (Ask Copilot to explain selection/cursor) |
-| `-cf` | Normal | **Fix Code** (Ask Copilot to fix bugs/errors in selection) |
-| `-cr` | Normal | **Reset Chat** (Clear conversation history) |
+| `Alt + l` | Insert | **Accept Ghost Text** (Copilot) |
+| `Alt + ]` | Insert | **Next Suggestion** (Copilot) |
+| `<leader>aa` | Normal | **Toggle Chat** (Opens the Avante sidebar) |
+| `<leader>ae` | Normal | **Edit Code** (Edit selected block with AI) |
+| `<leader>ar` | Normal | **Refresh** (Refresh AI suggestions) |
 
 ### Neo-Tree
 | Key | Mode | Action |

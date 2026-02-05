@@ -5,23 +5,29 @@ local default_prefs = {
   theme = "gruvbox",
   background = "dark",
   node_path_windows = nil,
-  enable_copilot = true,
   enable_neo_tree_on_startup = true
 }
 
 local config_status, user_prefs = pcall(require, "user_settings")
--- Merges user_prefs on top of defaults. usage: vim.tbl_deep_extend("force", defaults, user_overrides)
 local prefs = vim.tbl_deep_extend("force", default_prefs, config_status and user_prefs or {})
+
+if prefs.gemini_api_key and prefs.gemini_api_key ~= "" then
+  vim.env.GEMINI_API_KEY = prefs.gemini_api_key:gsub("^%s*(.-)%s*$", "%1")
+end
 
 -- =============================================================================
 -- 2. CROSS-PLATFORM LOGIC
 -- =============================================================================
 local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
-local path_sep = is_windows and "\\" or "/"
 
 local shell_cmd
 if is_windows then
+vim.opt.lazyredraw = true
   shell_cmd = 'powershell.exe -NoLogo -ExecutionPolicy Bypass'
+  vim.opt.shell = "powershell.exe"
+  vim.opt.shellcmdflag = "-NoLogo -ExecutionPolicy Bypass -Command"
+  vim.opt.shellquote = ""
+  vim.opt.shellxquote = ""
 else
   if vim.fn.executable('pwsh') == 1 then
     shell_cmd = 'pwsh -NoLogo -ExecutionPolicy Bypass'
@@ -62,11 +68,11 @@ vim.g.maplocalleader = " "
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
-vim.opt.scrolloff = 999
+vim.opt.scrolloff = 4
 vim.opt.timeoutlen = 300
 vim.opt.termguicolors = true
 vim.opt.signcolumn = "yes"
-vim.opt.updatetime = 250
+vim.opt.updatetime = 100
 vim.opt.iskeyword:append("-") -- Treat dash as part of a word (for PowerShell cmdlets)
 vim.opt.cursorcolumn = false
 vim.opt.list = false
@@ -98,7 +104,7 @@ require("lazy").setup({
 
   { "nvim-lua/plenary.nvim" },
 
-  -- Fuzzy Finder (New Feature: Telescope)
+  -- Fuzzy Finder (Telescope)
   {
     "nvim-telescope/telescope.nvim",
     tag = "0.1.5",
@@ -110,19 +116,16 @@ require("lazy").setup({
     end
   },
 
--- lua/plugins/mermaider.lua
- {
-  "snrogers/mermaider.nvim",
-  dependencies = {
-    "3rd/image.nvim", -- Required for image display
+  -- Mermaid Diagrams
+  {
+    "snrogers/mermaider.nvim",
+    dependencies = { "3rd/image.nvim" },
+    config = function()
+      require("mermaider").setup({})
+    end,
+    ft = { "mmd", "mermaid" },
   },
-  config = function()
-    require("mermaider").setup({
-      -- Your config here (see Configuration section below)
-    })
-  end,
-  ft = { "mmd", "mermaid" },
-},
+
   -- Keybinding Helper
   {
     "folke/which-key.nvim",
@@ -135,45 +138,40 @@ require("lazy").setup({
   },
 
   -- Diagnostic Viewer
-{
+  {
     "folke/trouble.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     keys = {
       { "<leader>xx", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
       { "<leader>xX", "<cmd>Trouble diagnostics toggle<cr>", desc = "Workspace Diagnostics (Trouble)" },
     },
-    opts = {
-    focus = true,
-    },
-},
+    opts = { focus = true },
+  },
+
   -- TODO Comments
-{
+  {
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {},
     keys = {
-        { "<leader>ft", "<cmd>TodoTelescope<cr>", desc = "Find TODOs" },
+      { "<leader>ft", "<cmd>TodoTelescope<cr>", desc = "Find TODOs" },
     },
   },
 
   -- D2 Diagramming Language Support
   {
-  "terrastruct/d2-vim",
-  ft = "d2",
-  config = function()
-    vim.g.d2_fmt_autosave = 1
-  end,
-   },
+    "terrastruct/d2-vim",
+    ft = "d2",
+    config = function()
+      vim.g.d2_fmt_autosave = 1
+    end,
+  },
 
   -- Git Management
   {
     "kdheepak/lazygit.nvim",
     cmd = {
-      "LazyGit",
-      "LazyGitConfig",
-      "LazyGitCurrentFile",
-      "LazyGitFilter",
-      "LazyGitFilterCurrentFile",
+      "LazyGit", "LazyGitConfig", "LazyGitCurrentFile", "LazyGitFilter", "LazyGitFilterCurrentFile",
     },
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
@@ -183,7 +181,7 @@ require("lazy").setup({
   },
 
   -- Harpoon (File Navigation)
-{
+  {
     "ThePrimeagen/harpoon",
     branch = "harpoon2",
     dependencies = { "nvim-lua/plenary.nvim" },
@@ -222,14 +220,12 @@ require("lazy").setup({
     end
   },
 
---  UI & Themes 
+  -- UI & Themes
   {
     "ellisonleao/gruvbox.nvim",
-    -- If prefs.theme is somehow nil, this ensures it doesn't accidentally lazy load without a trigger
     lazy = (prefs.theme ~= "gruvbox"),
     priority = 1000,
     config = function()
-      -- Set background BEFORE loading the scheme to prevent reset flashes
       vim.o.background = prefs.background
       vim.cmd("colorscheme gruvbox")
     end
@@ -239,14 +235,9 @@ require("lazy").setup({
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",
     config = function()
-      vim.api.nvim_set_hl(0, "IblIndent", { fg = "#504945" }) 
-
+      vim.api.nvim_set_hl(0, "IblIndent", { fg = "#504945" })
       require("ibl").setup({
-        indent = { 
-          char = "│", 
-          highlight = "IblIndent",
-        },
-        
+        indent = { char = "│", highlight = "IblIndent" },
         scope = { enabled = false },
       })
     end,
@@ -265,19 +256,19 @@ require("lazy").setup({
       vim.opt.splitright = true
       vim.opt.splitbelow = true
       require("neo-tree").setup({
-          enable_diagnostics = false,
-          close_if_last_window = true,
-          filesystem = {
-              hijack_netrw_behavior = "open_default",
-              follow_current_file = { enabled = true },
-              use_libuv_file_watcher = true,
-          },
-          window = { position = "right", width = 40 }
+        enable_diagnostics = false,
+        close_if_last_window = true,
+        filesystem = {
+          hijack_netrw_behavior = "open_default",
+          follow_current_file = { enabled = true },
+          use_libuv_file_watcher = true,
+        },
+        window = { position = "right", width = 40 }
       })
     end
   },
 
-  --  finally replaced Airline. Lualine is written in Lua, faster, and easier to configure.
+  -- Status Line
   {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
@@ -288,28 +279,53 @@ require("lazy").setup({
     end
   },
 
-  --  Coding & Automation 
+  -- Coding & Automation
   { "jiangmiao/auto-pairs" },
   { "preservim/nerdcommenter" },
+
+  -- Copilot (Ghost Text Only)
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        copilot_node_command = node_cmd,
+        panel = { enabled = false },
+        suggestion = {
+          enabled = true,
+          auto_trigger = true,
+          keymap = {
+            accept = "<M-l>",
+            next = "<M-]>",
+            prev = "<M-[>",
+            dismiss = "<C-]>",
+          },
+        },
+      })
+    end,
+  },
+
+  -- UI Input/Select (Dressing) - Required for Avante inputs
+  { "stevearc/dressing.nvim", opts = {} },
 
   -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
-      -- Windows optimization for compilers
       require("nvim-treesitter.install").compilers = { "zig", "gcc" }
       local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
       parser_config.d2 = {
         install_info = {
-          url = "https://github.com/ravsii/tree-sitter-d2", -- The repo with the grammar
+          url = "https://github.com/ravsii/tree-sitter-d2",
           files = { "src/parser.c" },
           branch = "main",
         },
         filetype = "d2",
       }
       require("nvim-treesitter.configs").setup({
-      ensure_installed = { "powershell", "lua", "python", "c_sharp", "go", "markdown", "json", "yaml", "bash"},
+        ensure_installed = { "powershell", "lua", "python", "c_sharp", "go", "markdown", "markdown_inline", "json", "yaml", "bash" },
         sync_install = false,
         highlight = { enable = true },
         indent = { enable = true },
@@ -317,7 +333,7 @@ require("lazy").setup({
     end,
   },
 
--- LSP & Mason 
+  -- LSP & Mason
   {
     "williamboman/mason.nvim",
     dependencies = {
@@ -334,57 +350,52 @@ require("lazy").setup({
       end
 
       mason_lsp.setup({
-        ensure_installed = { "powershell_es", "lua_ls", "omnisharp"},
+        ensure_installed = { "powershell_es", "lua_ls", "omnisharp" },
         handlers = {
           function(server_name)
             require("lspconfig")[server_name].setup({
-                capabilities = capabilities,
-                on_attach = on_attach
-            })
-          end,
-
-["powershell_es"] = function()
-            require("lspconfig").powershell_es.setup({
-              bundle_path = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services",
-              
-              settings = {
-                powershell = {
-                  codeFormatting = { preset = "OTBS" },
-                  enableProfileLoading = false,
-                  scriptAnalysis = {
-                    enable = true,
-                  },
-                },
-              },
-	      capabilities = capabilities,
+              capabilities = capabilities,
               on_attach = on_attach
             })
           end,
 
-          -- C# Config
-          ["omnisharp"] = function()
-             require("lspconfig").omnisharp.setup({
-                capabilities = capabilities,
-                on_attach = on_attach,
-                cmd = { vim.fn.stdpath("data") .. "/mason/bin/omnisharp" },
-                enable_roslyn_analyzers = true,
-                organize_imports_on_format = true,
-             })
+          ["powershell_es"] = function()
+            require("lspconfig").powershell_es.setup({
+              bundle_path = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services",
+              settings = {
+                powershell = {
+                  codeFormatting = { preset = "OTBS" },
+                  enableProfileLoading = false,
+                  scriptAnalysis = { enable = true },
+                },
+              },
+              capabilities = capabilities,
+              on_attach = on_attach
+            })
           end,
 
-          -- Lua Config
+          ["omnisharp"] = function()
+            require("lspconfig").omnisharp.setup({
+              capabilities = capabilities,
+              on_attach = on_attach,
+              cmd = { vim.fn.stdpath("data") .. "/mason/bin/omnisharp" },
+              enable_roslyn_analyzers = true,
+              organize_imports_on_format = true,
+            })
+          end,
+
           ["lua_ls"] = function()
-             require("lspconfig").lua_ls.setup({
-                capabilities = capabilities,
-                on_attach = on_attach,
-                settings = {
-                  Lua = {
-                    diagnostics = { globals = { "vim" } },
-                    workspace = { library = vim.api.nvim_get_runtime_file("", true) },
-                    telemetry = { enable = false },
-                  },
+            require("lspconfig").lua_ls.setup({
+              capabilities = capabilities,
+              on_attach = on_attach,
+              settings = {
+                Lua = {
+                  diagnostics = { globals = { "vim" } },
+                  workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+                  telemetry = { enable = false },
                 },
-             })
+              },
+            })
           end,
         }
       })
@@ -428,50 +439,57 @@ require("lazy").setup({
     end
   },
 
-  -- Copilot 
+  -- ===========================================================================
+  -- AVANTE AI CONFIGURATION (Gemini Provider)
+  -- ===========================================================================
+
   {
-    "zbirenbaum/copilot.lua",
-    cond = prefs.enable_copilot,
-    cmd = "Copilot",
-    event = "InsertEnter",
-    config = function()
-    require("copilot").setup({
-    filetypes = {
-          gitcommit = true,
-          markdown = true,
-          yaml = false,
-    },
-        copilot_node_command = node_cmd,
-        suggestion = {
-          enabled = true,
-          auto_trigger = true,
-          keymap = {
-            accept = "<M-l>",
-            next = "<M-]>",
-            prev = "<M-[>",
-            dismiss = "<C-]>",
+    "yetone/avante.nvim",
+    event = "VeryLazy",
+    lazy = false,
+    version = false,
+    build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false",
+    dependencies = {
+      "stevearc/dressing.nvim",
+      { "nvim-lua/plenary.nvim" },
+      { "MunifTanjim/nui.nvim" },
+      {
+        "HakonHarnes/img-clip.nvim",
+        event = "VeryLazy",
+        opts = {
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = { insert_mode = true },
+            use_absolute_path = true,
           },
         },
-      })
-    end,
+      },
+      {
+        "MeanderingProgrammer/render-markdown.nvim",
+        opts = { file_types = { "markdown", "Avante" } },
+        ft = { "markdown", "Avante" },
+      },
+    },
+    opts = {
+      provider = "copilot",
+      behaviour = {
+        auto_suggestions = false,
+        auto_set_highlight_group = true,
+        auto_set_keymaps = true,
+        auto_apply_diff_after_generation = false,
+        support_paste_from_clipboard = true,
+      },
+      windows = {
+        position = "right",
+        width = 30,
+        sidebar_header = { align = "center", rounded = true },
+      },
+    },
   },
 
--- Copilot Chat
-  {
-    "CopilotC-Nvim/CopilotChat.nvim",
-    cond = prefs.enable_copilot,
-    branch = "main",
-    dependencies = { "zbirenbaum/copilot.lua", "nvim-lua/plenary.nvim" },
-    opts = { debug = false, window = { layout = 'float' } },
-    keys = {
-      { "<leader>lc", "<cmd>CopilotChatToggle<cr>", mode = { "n"}, desc = "Copilot Chat" },
-      { "<leader>le", "<cmd>CopilotChatExplain<cr>", mode = { "n", "v" }, desc = "Copilot Explain" },
-      { "<leader>lf", "<cmd>CopilotChatFix<cr>", mode = { "n", "v" }, desc = "Copilot Fix" },
-      { "<leader>lr", "<cmd>CopilotChatReview<cr>", mode = { "n", "v" }, desc = "Copilot Review" },
-      { "<leader>lm", "<cmd>CopilotChatCommit<cr>", desc = "Copilot Generate Commit Message" },
-    },
-    },
-    })
+})
+
 -- =============================================================================
 -- 6. KEYMAPS (Enhanced)
 -- =============================================================================
@@ -600,5 +618,4 @@ vim.api.nvim_create_user_command("CheatHelp", function()
   local close_win = function() vim.api.nvim_win_close(win, true) end
   vim.keymap.set("n", "q", close_win, { buffer = buf, nowait = true })
   vim.keymap.set("n", "<Esc>", close_win, { buffer = buf, nowait = true })
-
 end, {})
