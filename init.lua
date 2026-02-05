@@ -11,10 +11,6 @@ local default_prefs = {
 local config_status, user_prefs = pcall(require, "user_settings")
 local prefs = vim.tbl_deep_extend("force", default_prefs, config_status and user_prefs or {})
 
-if prefs.gemini_api_key and prefs.gemini_api_key ~= "" then
-  vim.env.GEMINI_API_KEY = prefs.gemini_api_key:gsub("^%s*(.-)%s*$", "%1")
-end
-
 -- =============================================================================
 -- 2. CROSS-PLATFORM LOGIC
 -- =============================================================================
@@ -22,7 +18,7 @@ local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
 
 local shell_cmd
 if is_windows then
-vim.opt.lazyredraw = true
+  vim.opt.lazyredraw = true
   shell_cmd = 'powershell.exe -NoLogo -ExecutionPolicy Bypass'
   vim.opt.shell = "powershell.exe"
   vim.opt.shellcmdflag = "-NoLogo -ExecutionPolicy Bypass -Command"
@@ -283,7 +279,7 @@ require("lazy").setup({
   { "jiangmiao/auto-pairs" },
   { "preservim/nerdcommenter" },
 
-  -- Copilot (Ghost Text Only)
+  -- Copilot (Ghost Text ENABLED)
   {
     "zbirenbaum/copilot.lua",
     cmd = "Copilot",
@@ -294,10 +290,10 @@ require("lazy").setup({
         panel = { enabled = false },
         suggestion = {
           enabled = true,
-          auto_trigger = true,
+          auto_trigger = true, -- RESTORED: Ghost text enabled by default
           keymap = {
             accept = "<M-l>",
-            next = "<M-]>",
+            next = "<M-j>",
             prev = "<M-[>",
             dismiss = "<C-]>",
           },
@@ -439,10 +435,7 @@ require("lazy").setup({
     end
   },
 
-  -- ===========================================================================
-  -- AVANTE AI CONFIGURATION (Gemini Provider)
-  -- ===========================================================================
-
+  -- AVANTE AI CONFIGURATION (STRICTLY MANUAL APPLY)
   {
     "yetone/avante.nvim",
     event = "VeryLazy",
@@ -480,6 +473,23 @@ require("lazy").setup({
         auto_apply_diff_after_generation = false,
         support_paste_from_clipboard = true,
       },
+      mappings = {
+        edit = "<nop>",
+        ask = "<leader>aa",
+        refresh = "<leader>ar",
+        sidebar = {
+          apply_one = "<leader>ap",
+          apply_all = "<leader>aa",
+          switch_windows = "<Tab>",
+          reverse_switch_windows = "<S-Tab>",
+        },
+        suggestion = {
+            accept = "<M-l>",
+            next = "<M-j>",
+            prev = "<M-k>",
+            dismiss = "<C-]>",
+        },
+      },
       windows = {
         position = "right",
         width = 30,
@@ -487,52 +497,43 @@ require("lazy").setup({
       },
     },
   },
-
 })
 
 -- =============================================================================
 -- 6. KEYMAPS (Enhanced)
 -- =============================================================================
--- General
 vim.keymap.set("i", "jj", "<Esc>", { noremap = true })
 vim.keymap.set("n", "<leader>q", ":q<CR>", { desc = "Quit" })
 vim.keymap.set("n", "<leader>w", ":w<CR>", { desc = "Save" })
 vim.keymap.set("n", "<leader>h", ":noh<CR>", { desc = "Clear Highlights" })
 
--- Telescope
 local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = "Find Files" })
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = "Grep Text" })
 vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = "Find Buffers" })
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = "Help Tags" })
-
 vim.keymap.set("n", "<leader>gg", "<cmd>LazyGit<cr>", { desc = "LazyGit" })
 
--- Window Movement
 vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Window Left' })
 vim.keymap.set('n', '<C-j>', '<C-w>j', { desc = 'Window Down' })
 vim.keymap.set('n', '<C-k>', '<C-w>k', { desc = 'Window Up' })
 vim.keymap.set('n', '<C-l>', '<C-w>l', { desc = 'Window Right' })
 
--- Neo-tree
 vim.keymap.set('n', '<C-n>', ':Neotree toggle<CR>', { silent = true, desc = "Toggle Explorer" })
 vim.keymap.set('n', '<leader>e', ':Neotree focus<CR>', { silent = true, desc = "Focus Explorer" })
+vim.keymap.set("n", "<leader>n", ":Neotree toggle<CR>", { silent = true, desc = "Toggle Explorer (Leader)" })
 
--- ToggleTerm
 vim.keymap.set('n', '<F7>', '<cmd>ToggleTerm<cr>', { noremap = true, silent = true, desc = "Toggle Terminal" })
 vim.keymap.set('t', '<F7>', '<cmd>ToggleTerm<cr>', { noremap = true, silent = true })
 
--- LSP
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to Def" })
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover Doc" })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code Action" })
 
--- Diagnostics Navigation
 vim.keymap.set("n", "gl", vim.diagnostic.open_float, { desc = "Show Line Diagnostics" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous Diagnostic" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next Diagnostic" })
 
--- Cheat.sh Query
 vim.keymap.set("n", "<leader>?", function()
   vim.ui.input({ prompt = "Cheat.sh Query: " }, function(input)
     if input and input ~= "" then
@@ -564,13 +565,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- =============================================================================
 -- 8. CUSTOM COMMANDS
 -- =============================================================================
-
--- Cheat.sh Command
 vim.api.nvim_create_user_command("Cheat", function(opts)
   local query = opts.args:gsub(" ", "+")
   local cmd = string.format("powershell.exe -NoProfile -Command Invoke-RestMethod -Uri 'https://cheat.sh/%s?T'", query)
   local output = vim.fn.systemlist(cmd)
-
   vim.cmd("new")
   vim.api.nvim_buf_set_lines(0, 0, -1, false, output)
   vim.opt_local.buftype = "nofile"
@@ -578,44 +576,3 @@ vim.api.nvim_create_user_command("Cheat", function(opts)
   vim.opt_local.swapfile = false
   vim.opt_local.filetype = "sh"
 end, { nargs = "+" })
-
--- Cheat.sh Help Command
-vim.api.nvim_create_user_command("CheatHelp", function()
-  local help_text = {
-    "Cheat.sh Cheatsheet",
-    "===================",
-    "Shortcuts:",
-    "<leader>? - Prompt for a cheat.sh query",
-    "",
-    "Usage Examples:",
-    "  :Cheat powershell/try catch",
-    "  :Cheat python/reverse list",
-    "  :Cheat lua/table size",
-    "  :Cheat git/commit",
-    "  :Cheat docker/run",
-    "",
-    "Press <q> or <Esc> to close"
-  }
-
-  local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, help_text)
-
-  local width = 40
-  local height = #help_text
-  local col = math.floor((vim.o.columns - width) / 2)
-  local row = math.floor((vim.o.lines - height) / 2)
-
-  local win = vim.api.nvim_open_win(buf, true, {
-    relative = "editor",
-    width = width,
-    height = height,
-    col = col,
-    row = row,
-    style = "minimal",
-    border = "rounded"
-  })
-
-  local close_win = function() vim.api.nvim_win_close(win, true) end
-  vim.keymap.set("n", "q", close_win, { buffer = buf, nowait = true })
-  vim.keymap.set("n", "<Esc>", close_win, { buffer = buf, nowait = true })
-end, {})
