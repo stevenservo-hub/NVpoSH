@@ -158,6 +158,11 @@ Toggleterm to give you  PS terminal access within nvim
 
 <img width="1871" height="964" alt="image" src="https://github.com/user-attachments/assets/6b418c6f-00af-41de-958e-f2a70d0b5750" />
 
+Avante (Cursor like AI)
+
+<img width="1913" height="1001" alt="image" src="https://github.com/user-attachments/assets/17425c84-cf69-4419-9030-759715291388" />
+
+
 Full LSP and intellisense for powershell, python, GO, etc. Giving you "in terminal" access to definitions and keywords. 
 
 <img width="487" height="74" alt="image" src="https://github.com/user-attachments/assets/6a4dee1b-5172-4673-abdb-2ee73a747e0f" />
