@@ -5,7 +5,7 @@ local default_prefs = {
   theme = "gruvbox",
   background = "dark",
   node_path_windows = nil,
-  enable_neo_tree_on_startup = true
+  enable_neo_tree_on_startup = false,
 }
 
 local config_status, user_prefs = pcall(require, "user_settings")
@@ -19,16 +19,16 @@ local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
 local shell_cmd
 if is_windows then
   vim.opt.lazyredraw = true
-  shell_cmd = 'powershell.exe -NoLogo -ExecutionPolicy Bypass'
+  shell_cmd = "powershell.exe -NoLogo -ExecutionPolicy Bypass"
   vim.opt.shell = "powershell.exe"
   vim.opt.shellcmdflag = "-NoLogo -ExecutionPolicy Bypass -Command"
   vim.opt.shellquote = ""
   vim.opt.shellxquote = ""
 else
-  if vim.fn.executable('pwsh') == 1 then
-    shell_cmd = 'pwsh -NoLogo -ExecutionPolicy Bypass'
+  if vim.fn.executable("pwsh") == 1 then
+    shell_cmd = "pwsh -NoLogo -ExecutionPolicy Bypass"
   else
-    shell_cmd = 'bash'
+    shell_cmd = "bash"
   end
 end
 
@@ -50,8 +50,12 @@ end
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
-    "git", "clone", "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git", "--branch=stable", lazypath,
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
   })
 end
 vim.opt.rtp:prepend(lazypath)
@@ -61,6 +65,7 @@ vim.opt.rtp:prepend(lazypath)
 -- =============================================================================
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = "a"
@@ -69,11 +74,15 @@ vim.opt.timeoutlen = 300
 vim.opt.termguicolors = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 100
-vim.opt.iskeyword:append("-") -- Treat dash as part of a word (for PowerShell cmdlets)
+vim.opt.iskeyword:append("-")
 vim.opt.cursorcolumn = false
 vim.opt.list = false
+vim.opt.clipboard = "unnamedplus"
 
--- Native Highlight Yank
+pcall(function()
+  vim.loader.enable()
+end)
+
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = vim.api.nvim_create_augroup("HighlightYank", { clear = true }),
   callback = function()
@@ -81,7 +90,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   end,
 })
 
-vim.keymap.set("n", "<leader>zz", function()
+vim.keymap.set("n", "zz", function()
   if vim.opt.scrolloff:get() == 999 then
     vim.opt.scrolloff = 8
     print("Scrolling: Standard (8 lines)")
@@ -91,38 +100,34 @@ vim.keymap.set("n", "<leader>zz", function()
   end
 end, { desc = "Toggle Centered Scroll" })
 
+-- Block visual mode for Windows terminals
+vim.keymap.set("n", "<C-q>", "<C-v>", { noremap = true, silent = true, desc = "Block Visual Mode" })
+
+-- Hard-disable legacy auto-pairs behavior if somehow present
+vim.g.AutoPairsLoaded = 1
+vim.g.loaded_auto_pairs = 1
+
 -- =============================================================================
 -- 5. PLUGINS
 -- =============================================================================
 require("lazy").setup({
-
   rocks = { enabled = false, hererocks = false },
 
-  { "nvim-lua/plenary.nvim" },
+  -- Explicitly disable legacy auto-pairs if it exists anywhere
+  { "jiangmiao/auto-pairs", enabled = false },
 
-  -- Fuzzy Finder (Telescope)
-  {
-    "nvim-telescope/telescope.nvim",
-    tag = "0.1.5",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      require("telescope").setup({
-        defaults = { file_ignore_patterns = { "node_modules", ".git" } }
-      })
-    end
-  },
+  { "nvim-lua/plenary.nvim", lazy = true },
 
-  -- Mermaid Diagrams
   {
-    "snrogers/mermaider.nvim",
-    dependencies = { "3rd/image.nvim" },
+    "ellisonleao/gruvbox.nvim",
+    lazy = false,
+    priority = 1000,
     config = function()
-      require("mermaider").setup({})
+      vim.o.background = prefs.background
+      vim.cmd("colorscheme gruvbox")
     end,
-    ft = { "mmd", "mermaid" },
   },
 
-  -- Keybinding Helper
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
@@ -130,23 +135,50 @@ require("lazy").setup({
       vim.o.timeout = true
       vim.o.timeoutlen = 300
     end,
-    opts = {}
+    opts = {},
   },
 
-  -- Diagnostic Viewer
+  {
+    "nvim-telescope/telescope.nvim",
+    tag = "0.1.5",
+    cmd = "Telescope",
+    keys = {
+      { "<leader>ff", function() require("telescope.builtin").find_files() end, desc = "Find Files" },
+      { "<leader>fg", function() require("telescope.builtin").live_grep() end, desc = "Grep Text" },
+      { "<leader>fb", function() require("telescope.builtin").buffers() end, desc = "Find Buffers" },
+      { "<leader>fh", function() require("telescope.builtin").help_tags() end, desc = "Help Tags" },
+    },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {
+      defaults = {
+        file_ignore_patterns = { "node_modules", ".git" },
+      },
+    },
+  },
+
+  {
+    "snrogers/mermaider.nvim",
+    ft = { "mmd", "mermaid" },
+    dependencies = { "3rd/image.nvim" },
+    config = function()
+      require("mermaider").setup({})
+    end,
+  },
+
   {
     "folke/trouble.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    cmd = "Trouble",
     keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
-      { "<leader>xX", "<cmd>Trouble diagnostics toggle<cr>", desc = "Workspace Diagnostics (Trouble)" },
+      { "xx", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer Diagnostics (Trouble)" },
+      { "xX", "<cmd>Trouble diagnostics toggle<cr>", desc = "Workspace Diagnostics (Trouble)" },
     },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = { focus = true },
   },
 
-  -- TODO Comments
   {
     "folke/todo-comments.nvim",
+    event = "VeryLazy",
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = {},
     keys = {
@@ -154,7 +186,6 @@ require("lazy").setup({
     },
   },
 
-  -- D2 Diagramming Language Support
   {
     "terrastruct/d2-vim",
     ft = "d2",
@@ -163,11 +194,14 @@ require("lazy").setup({
     end,
   },
 
-  -- Git Management
   {
     "kdheepak/lazygit.nvim",
     cmd = {
-      "LazyGit", "LazyGitConfig", "LazyGitCurrentFile", "LazyGitFilter", "LazyGitFilterCurrentFile",
+      "LazyGit",
+      "LazyGitConfig",
+      "LazyGitCurrentFile",
+      "LazyGitFilter",
+      "LazyGitFilterCurrentFile",
     },
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
@@ -176,59 +210,53 @@ require("lazy").setup({
     end,
   },
 
-  -- Harpoon (File Navigation)
   {
     "ThePrimeagen/harpoon",
     branch = "harpoon2",
+    keys = {
+      { "<leader>a", function() require("harpoon"):list():add() end, desc = "Harpoon Add" },
+      { "<leader>hm", function()
+          local harpoon = require("harpoon")
+          harpoon.ui:toggle_quick_menu(harpoon:list())
+        end, desc = "Harpoon Menu" },
+      { "<leader>1", function() require("harpoon"):list():select(1) end, desc = "Harpoon 1" },
+      { "<leader>2", function() require("harpoon"):list():select(2) end, desc = "Harpoon 2" },
+      { "<leader>3", function() require("harpoon"):list():select(3) end, desc = "Harpoon 3" },
+      { "<leader>4", function() require("harpoon"):list():select(4) end, desc = "Harpoon 4" },
+    },
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
-      local harpoon = require("harpoon")
-      harpoon:setup()
-
-      -- Keymaps
-      vim.keymap.set("n", "<leader>a", function() harpoon:list():add() end, { desc = "Harpoon Add" })
-      vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon Menu" })
-
-      -- Fast Navigation
-      vim.keymap.set("n", "<C-1>", function() harpoon:list():select(1) end)
-      vim.keymap.set("n", "<C-2>", function() harpoon:list():select(2) end)
-      vim.keymap.set("n", "<C-3>", function() harpoon:list():select(3) end)
-      vim.keymap.set("n", "<C-4>", function() harpoon:list():select(4) end)
+      require("harpoon"):setup()
     end,
   },
 
-  -- Git Signs
-  { "lewis6991/gitsigns.nvim", config = true },
-
-  -- Terminal (ToggleTerm)
   {
-    'akinsho/toggleterm.nvim',
+    "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = true,
+  },
+
+  {
+    "akinsho/toggleterm.nvim",
     version = "*",
+    cmd = { "ToggleTerm", "TermExec" },
+    keys = {
+      { "<leader>tt", "<cmd>ToggleTerm<cr>", desc = "Toggle Terminal" },
+    },
     config = function()
       require("toggleterm").setup({
         size = 20,
-        open_mapping = [[<c-\>]],
         hide_numbers = true,
-        direction = 'float',
+        direction = "float",
         shell = shell_cmd,
-        float_opts = { border = 'curved' }
+        float_opts = { border = "curved" },
       })
-    end
-  },
-
-  -- UI & Themes
-  {
-    "ellisonleao/gruvbox.nvim",
-    lazy = (prefs.theme ~= "gruvbox"),
-    priority = 1000,
-    config = function()
-      vim.o.background = prefs.background
-      vim.cmd("colorscheme gruvbox")
-    end
+    end,
   },
 
   {
     "lukas-reineke/indent-blankline.nvim",
+    event = { "BufReadPre", "BufNewFile" },
     main = "ibl",
     config = function()
       vim.api.nvim_set_hl(0, "IblIndent", { fg = "#504945" })
@@ -239,10 +267,14 @@ require("lazy").setup({
     end,
   },
 
-  -- File Explorer (Neo-tree)
   {
     "nvim-neo-tree/neo-tree.nvim",
     branch = "v3.x",
+    cmd = "Neotree",
+    keys = {
+      { "<leader>n", "<cmd>Neotree toggle<cr>", desc = "Toggle Explorer" },
+      { "<leader>e", "<cmd>Neotree focus<cr>", desc = "Focus Explorer" },
+    },
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons",
@@ -257,29 +289,50 @@ require("lazy").setup({
         filesystem = {
           hijack_netrw_behavior = "open_default",
           follow_current_file = { enabled = true },
-          use_libuv_file_watcher = true,
+          use_libuv_file_watcher = false,
         },
-        window = { position = "right", width = 40 }
+        window = { position = "right", width = 40 },
       })
-    end
+    end,
   },
 
-  -- Status Line
   {
-    'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    "nvim-lualine/lualine.nvim",
+    event = "VeryLazy",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      require('lualine').setup({
-        options = { theme = 'gruvbox' }
+      require("lualine").setup({
+        options = { theme = "gruvbox" },
       })
-    end
+    end,
   },
 
-  -- Coding & Automation
-  { "jiangmiao/auto-pairs" },
-  { "preservim/nerdcommenter" },
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = function()
+      local npairs = require("nvim-autopairs")
+      npairs.setup({
+        check_ts = false,
+        disable_filetype = { "TelescopePrompt", "vim", "Avante" },
+        fast_wrap = {},
+      })
 
-  -- Copilot (Ghost Text ENABLED)
+      local ok_cmp, cmp = pcall(require, "cmp")
+      if ok_cmp then
+        local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+        cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+      end
+    end,
+  },
+
+  {
+    "preservim/nerdcommenter",
+    keys = {
+      { "<leader>/", "<Plug>NERDCommenterToggle", desc = "Toggle Comment", mode = { "n", "v" } },
+    },
+  },
+
   {
     "zbirenbaum/copilot.lua",
     cmd = "Copilot",
@@ -290,24 +343,21 @@ require("lazy").setup({
         panel = { enabled = false },
         suggestion = {
           enabled = true,
-          auto_trigger = true, -- RESTORED: Ghost text enabled by default
-          keymap = {
-            accept = "<M-l>",
-            next = "<M-j>",
-            prev = "<M-[>",
-            dismiss = "<C-]>",
-          },
+          auto_trigger = true,
         },
       })
     end,
   },
 
-  -- UI Input/Select (Dressing) - Required for Avante inputs
-  { "stevearc/dressing.nvim", opts = {} },
+  {
+    "stevearc/dressing.nvim",
+    event = "VeryLazy",
+    opts = {},
+  },
 
-  -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
+    event = { "BufReadPost", "BufNewFile" },
     build = ":TSUpdate",
     config = function()
       require("nvim-treesitter.install").compilers = { "zig", "gcc" }
@@ -321,7 +371,18 @@ require("lazy").setup({
         filetype = "d2",
       }
       require("nvim-treesitter.configs").setup({
-        ensure_installed = { "powershell", "lua", "python", "c_sharp", "go", "markdown", "markdown_inline", "json", "yaml", "bash" },
+        ensure_installed = {
+          "powershell",
+          "lua",
+          "python",
+          "c_sharp",
+          "go",
+          "markdown",
+          "markdown_inline",
+          "json",
+          "yaml",
+          "bash",
+        },
         sync_install = false,
         highlight = { enable = true },
         indent = { enable = true },
@@ -329,19 +390,21 @@ require("lazy").setup({
     end,
   },
 
-  -- LSP & Mason
   {
     "williamboman/mason.nvim",
+    cmd = { "Mason", "MasonInstall", "MasonUpdate" },
     dependencies = {
       "williamboman/mason-lspconfig.nvim",
       "neovim/nvim-lspconfig",
+      "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
       require("mason").setup()
-      local mason_lsp = require("mason-lspconfig")
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-      local on_attach = function(client, bufnr)
+      local mason_lsp = require("mason-lspconfig")
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+      local on_attach = function(client, _)
         client.server_capabilities.semanticTokensProvider = nil
       end
 
@@ -351,7 +414,7 @@ require("lazy").setup({
           function(server_name)
             require("lspconfig")[server_name].setup({
               capabilities = capabilities,
-              on_attach = on_attach
+              on_attach = on_attach,
             })
           end,
 
@@ -366,7 +429,7 @@ require("lazy").setup({
                 },
               },
               capabilities = capabilities,
-              on_attach = on_attach
+              on_attach = on_attach,
             })
           end,
 
@@ -393,14 +456,24 @@ require("lazy").setup({
               },
             })
           end,
-        }
+        },
       })
-    end
+    end,
   },
 
-  -- Completion (CMP)
+  {
+    "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
+  },
+
+  {
+    "L3MON4D3/LuaSnip",
+    event = "InsertEnter",
+  },
+
   {
     "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
     dependencies = {
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
@@ -420,35 +493,51 @@ require("lazy").setup({
           end,
         },
         mapping = cmp.mapping.preset.insert({
-          ['<Tab>'] = cmp.mapping.select_next_item(),
-          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }),
-          ['<C-Space>'] = cmp.mapping.complete(),
+          ["<C-n>"] = cmp.mapping.select_next_item(),
+          ["<C-p>"] = cmp.mapping.select_prev_item(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          ["<C-Space>"] = cmp.mapping.complete(),
         }),
         sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-          { name = 'luasnip' },
-          { name = 'buffer' },
-          { name = 'path' }
-        })
+          { name = "nvim_lsp" },
+          { name = "luasnip" },
+          { name = "buffer" },
+          { name = "path" },
+        }),
       })
-    end
+    end,
   },
 
-  -- AVANTE AI CONFIGURATION (STRICTLY MANUAL APPLY)
   {
     "yetone/avante.nvim",
-    event = "VeryLazy",
-    lazy = false,
-    version = false,
-    build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false",
+    cmd = {
+      "AvanteAsk",
+      "AvanteBuild",
+      "AvanteChat",
+      "AvanteEdit",
+      "AvanteFocus",
+      "AvanteRefresh",
+      "AvanteShowRepoMap",
+      "AvanteSwitchProvider",
+      "AvanteToggle",
+      "AvanteClear",
+    },
+    keys = {
+      { "<leader>aa", "<cmd>AvanteAsk<cr>", desc = "Avante Ask" },
+      { "<leader>ae", "<cmd>AvanteEdit<cr>", desc = "Avante Edit" },
+      { "<leader>ar", "<cmd>AvanteRefresh<cr>", desc = "Avante Refresh" },
+      { "<leader>ah", "<cmd>AvanteToggle<cr>", desc = "Avante Toggle" },
+    },
+    build = is_windows
+      and "powershell.exe -NoProfile -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
+      or nil,
     dependencies = {
       "stevearc/dressing.nvim",
-      { "nvim-lua/plenary.nvim" },
-      { "MunifTanjim/nui.nvim" },
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
       {
         "HakonHarnes/img-clip.nvim",
-        event = "VeryLazy",
+        ft = { "markdown", "Avante" },
         opts = {
           default = {
             embed_image_as_base64 = false,
@@ -460,34 +549,29 @@ require("lazy").setup({
       },
       {
         "MeanderingProgrammer/render-markdown.nvim",
-        opts = { file_types = { "markdown", "Avante" } },
         ft = { "markdown", "Avante" },
+        opts = { file_types = { "markdown", "Avante" } },
       },
     },
     opts = {
       provider = "copilot",
       behaviour = {
+        auto_approve_tool_permissions = false,
         auto_suggestions = false,
         auto_set_highlight_group = true,
-        auto_set_keymaps = true,
+        auto_set_keymaps = false,
         auto_apply_diff_after_generation = false,
         support_paste_from_clipboard = true,
+        minimize_diff = false,
       },
       mappings = {
-        edit = "<nop>",
+        edit = "<leader>ae",
         ask = "<leader>aa",
         refresh = "<leader>ar",
         sidebar = {
+          history = "<leader>ah",
           apply_one = "<leader>ap",
-          apply_all = "<leader>aa",
-          switch_windows = "<Tab>",
-          reverse_switch_windows = "<S-Tab>",
-        },
-        suggestion = {
-            accept = "<M-l>",
-            next = "<M-j>",
-            prev = "<M-k>",
-            dismiss = "<C-]>",
+          apply_all = "<leader>aA",
         },
       },
       windows = {
@@ -497,34 +581,42 @@ require("lazy").setup({
       },
     },
   },
+}, {
+  defaults = {
+    lazy = true,
+  },
+  install = {
+    colorscheme = { "gruvbox" },
+  },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
+  },
 })
 
 -- =============================================================================
--- 6. KEYMAPS (Enhanced)
+-- 6. KEYMAPS
 -- =============================================================================
-vim.keymap.set("i", "jj", "<Esc>", { noremap = true })
-vim.keymap.set("n", "<leader>q", ":q<CR>", { desc = "Quit" })
-vim.keymap.set("n", "<leader>w", ":w<CR>", { desc = "Save" })
-vim.keymap.set("n", "<leader>h", ":noh<CR>", { desc = "Clear Highlights" })
-
-local builtin = require('telescope.builtin')
-vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = "Find Files" })
-vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = "Grep Text" })
-vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = "Find Buffers" })
-vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = "Help Tags" })
+vim.keymap.set("i", "jj", "<Esc>", { noremap = true, desc = "Escape insert" })
+vim.keymap.set("n", "<leader>q", "<cmd>q<cr>", { desc = "Quit" })
+vim.keymap.set("n", "<leader>w", "<cmd>w<cr>", { desc = "Save" })
+vim.keymap.set("n", "<leader>h", "<cmd>noh<cr>", { desc = "Clear Highlights" })
 vim.keymap.set("n", "<leader>gg", "<cmd>LazyGit<cr>", { desc = "LazyGit" })
 
-vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Window Left' })
-vim.keymap.set('n', '<C-j>', '<C-w>j', { desc = 'Window Down' })
-vim.keymap.set('n', '<C-k>', '<C-w>k', { desc = 'Window Up' })
-vim.keymap.set('n', '<C-l>', '<C-w>l', { desc = 'Window Right' })
-
-vim.keymap.set('n', '<C-n>', ':Neotree toggle<CR>', { silent = true, desc = "Toggle Explorer" })
-vim.keymap.set('n', '<leader>e', ':Neotree focus<CR>', { silent = true, desc = "Focus Explorer" })
-vim.keymap.set("n", "<leader>n", ":Neotree toggle<CR>", { silent = true, desc = "Toggle Explorer (Leader)" })
-
-vim.keymap.set('n', '<F7>', '<cmd>ToggleTerm<cr>', { noremap = true, silent = true, desc = "Toggle Terminal" })
-vim.keymap.set('t', '<F7>', '<cmd>ToggleTerm<cr>', { noremap = true, silent = true })
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Window Left" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Window Down" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Window Up" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Window Right" })
 
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to Def" })
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover Doc" })
@@ -548,7 +640,9 @@ end, { desc = "Query Cheat.sh" })
 if prefs.enable_neo_tree_on_startup then
   vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
-      vim.cmd("Neotree show")
+      vim.schedule(function()
+        vim.cmd("Neotree show")
+      end)
     end,
   })
 end
@@ -567,7 +661,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- =============================================================================
 vim.api.nvim_create_user_command("Cheat", function(opts)
   local query = opts.args:gsub(" ", "+")
-  local cmd = string.format("powershell.exe -NoProfile -Command Invoke-RestMethod -Uri 'https://cheat.sh/%s?T'", query)
+  local cmd
+
+  if is_windows then
+    cmd = string.format(
+      "powershell.exe -NoProfile -Command Invoke-RestMethod -Uri 'https://cheat.sh/%s?T'",
+      query
+    )
+  else
+    cmd = string.format("curl -fsSL 'https://cheat.sh/%s?T'", query)
+  end
+
   local output = vim.fn.systemlist(cmd)
   vim.cmd("new")
   vim.api.nvim_buf_set_lines(0, 0, -1, false, output)

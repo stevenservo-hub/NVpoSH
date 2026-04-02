@@ -131,7 +131,7 @@ if ($CurrentProfile -notmatch "Set-Alias.*vi\b") {
 if ($ConfigsToAdd.Count -gt 0) {
     Write-Host "  [+] Adding missing configurations..." -ForegroundColor Green
     
-    Add-Content -Path $PROFILE -Value "`n# --- PoSH-Nvim Basics ---"
+    Add-Content -Path $PROFILE -Value "`n# NVpoSH Basics (added by setup.ps1, safe to remove if you know what you're doing)`n"
     foreach ($Line in $ConfigsToAdd) {
         Add-Content -Path $PROFILE -Value $Line
     }
