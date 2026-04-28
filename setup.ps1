@@ -9,7 +9,6 @@ if (-not (Test-Connection -ComputerName "www.google.com" -Count 1 -Quiet)) {
     Write-Error "Internet connection is required."
     exit 1
 }
-
 Clear-Host
 $Banner = @"
 ███╗   ██╗██╗   ██╗██████╗  ██████╗ ███████╗██╗  ██╗
@@ -45,7 +44,6 @@ Install-WingetPackage -Id "JesseDuffield.lazygit"
 Install-WingetPackage -Id "zig.zig"
 Install-WingetPackage -Id "BurntSushi.ripgrep.MSVC"
 Install-WingetPackage -Id "sharkdp.fd"
-# Install-WingetPackage -Id "mermaid-cli"
 }
 
 $Nerdfontcheck = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue | 

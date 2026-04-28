@@ -7,7 +7,6 @@ local default_prefs = {
   node_path_windows = nil,
   enable_neo_tree_on_startup = false,
 }
-
 local config_status, user_prefs = pcall(require, "user_settings")
 local prefs = vim.tbl_deep_extend("force", default_prefs, config_status and user_prefs or {})
 
@@ -44,6 +43,7 @@ if is_windows then
   end
 end
 
+
 -- =============================================================================
 -- 3. BOOTSTRAP LAZY.NVIM
 -- =============================================================================
@@ -63,13 +63,14 @@ vim.opt.rtp:prepend(lazypath)
 -- =============================================================================
 -- 4. CORE SETTINGS
 -- =============================================================================
+--
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 vim.opt.number = true
 vim.opt.relativenumber = true
-vim.opt.mouse = "a"
-vim.opt.scrolloff = 4
+--vim.opt.mouse = "a"
+vim.opt.scrolloff = 999
 vim.opt.timeoutlen = 300
 vim.opt.termguicolors = true
 vim.opt.signcolumn = "yes"
@@ -175,7 +176,7 @@ require("lazy").setup({
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = { focus = true },
   },
-
+  
   {
     "folke/todo-comments.nvim",
     event = "VeryLazy",
@@ -309,7 +310,7 @@ require("lazy").setup({
 
   {
     "windwp/nvim-autopairs",
-    event = "InsertEnter",
+    event = "BufReadPost",
     config = function()
       local npairs = require("nvim-autopairs")
       npairs.setup({
@@ -336,7 +337,7 @@ require("lazy").setup({
   {
     "zbirenbaum/copilot.lua",
     cmd = "Copilot",
-    event = "InsertEnter",
+    event = "BufReadPost",
     config = function()
       require("copilot").setup({
         copilot_node_command = node_cmd,
@@ -468,7 +469,7 @@ require("lazy").setup({
 
   {
     "L3MON4D3/LuaSnip",
-    event = "InsertEnter",
+    event = "BufReadPost",
   },
 
   {
@@ -527,6 +528,8 @@ require("lazy").setup({
       { "<leader>ae", "<cmd>AvanteEdit<cr>", desc = "Avante Edit" },
       { "<leader>ar", "<cmd>AvanteRefresh<cr>", desc = "Avante Refresh" },
       { "<leader>ah", "<cmd>AvanteToggle<cr>", desc = "Avante Toggle" },
+      { "<leader>am", "<cmd>AvanteModels<cr>", desc = "Avante Models" },
+      { "<leader>ac", "<cmd>AvanteClear<cr>", desc = "Avante Clear" },
     },
     build = is_windows
       and "powershell.exe -NoProfile -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false"
